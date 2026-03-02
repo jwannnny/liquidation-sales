@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Liquidation Sales">
+<title>Liquidation Sales</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#15130E;font-family:-apple-system,sans-serif;color:#EDE9E3;overscroll-behavior:none}
+::-webkit-scrollbar{display:none}
+input,button{font-family:inherit}
+input::placeholder{color:rgba(237,233,227,.25)}
+input:focus{outline:none}
+input[type=date]{color-scheme:dark}
+#app{min-height:100vh;padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+.topbar{background:#1B1912;border-bottom:1px solid rgba(255,255,255,.06);padding:calc(52px + env(safe-area-inset-top,0px)) 20px 16px}
+.topbar-row{display:flex;justify-content:space-between;align-items:flex-end}
+.app-eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;color:rgba(200,169,110,.6);text-transform:uppercase;margin-bottom:4px}
+.app-title{font-weight:800;font-size:22px;color:#EDE9E3;letter-spacing:-.04em}
+.add-btn{background:#C8A96E;color:#15130E;border:none;border-radius:12px;padding:10px 18px;font-size:14px;font-weight:800;cursor:pointer}
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:#1B1912;border-top:1px solid rgba(255,255,255,.06);display:flex;padding-bottom:env(safe-area-inset-bottom,8px);z-index:100}
+.tb{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;color:rgba(237,233,227,.35)}
+.tb.on{color:#C8A96E}
+.tb .ic{font-size:22px}
+.tb .lb{font-size:10px;font-weight:500}
+.tb.on .lb{font-weight:700}
+.page{padding:14px;display:none}
+.page.on{display:block}
+.card{background:#1B1912;border-radius:16px;border:1px solid rgba(255,255,255,.06)}
+.hero{background:linear-gradient(135deg,#2A220F,#1F1A0D);border-radius:20px;padding:22px 20px;margin-bottom:12px;border:1px solid rgba(200,169,110,.15)}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.kpi{background:#1B1912;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:13px 10px;text-align:center}
+.sg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.sp{border-radius:14px;padding:14px 8px;text-align:center}
+.sec{font-size:12px;font-weight:700;color:rgba(237,233,227,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.div{height:1px;background:rgba(255,255,255,.055)}
+.search-wrap{position:relative;margin-bottom:12px}
+.si{width:100%;background:#1B1912;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 12px 12px 38px;font-size:16px;color:#EDE9E3}
+.filters{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px}
+.fp{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;color:rgba(237,233,227,.5)}
+.fp.on{background:#C8A96E;color:#15130E;border-color:#C8A96E}
+.irow{display:flex;gap:10px;padding:13px 16px;align-items:flex-start}
+.ibar{width:3px;border-radius:2px;align-self:stretch;flex-shrink:0}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.bs{background:rgba(124,184,122,.15);color:#7CB87A}
+.bu{background:rgba(200,169,110,.15);color:#C8A96E}
+.bd{background:rgba(212,130,106,.15);color:#D4826A}
+.be{background:rgba(255,255,255,.06);border:none;color:rgba(237,233,227,.55);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer}
+.bx{background:rgba(212,130,106,.1);border:none;color:#D4826A;border-radius:7px;padding:5px 8px;font-size:12px;cursor:pointer}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-end;z-index:200;backdrop-filter:blur(8px)}
+.modal-ov.on{display:flex}
+.modal-sh{background:#1B1912;border-radius:22px 22px 0 0;padding:20px;width:100%;max-height:92vh;overflow-y:auto;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+.fi{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;font-size:16px;color:#EDE9E3;margin-bottom:14px}
+.fl{font-size:11px;font-weight:700;color:rgba(237,233,227,.4);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px}
+.so{flex:1;border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:rgba(237,233,227,.35)}
+.sub-btn{width:100%;background:linear-gradient(135deg,#C8A96E,#B08040);color:#15130E;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:800;cursor:pointer}
+#catscreen{display:none;position:fixed;inset:0;background:#15130E;z-index:150;overflow-y:auto;padding-bottom:24px}
+#catscreen.on{display:block}
+.catheader{background:#1B1912;border-bottom:1px solid rgba(255,255,255,.06);padding:calc(52px + env(safe-area-inset-top,0px)) 16px 0}
+.backbtn{background:rgba(255,255,255,.07);border:none;color:#EDE9E3;width:36px;height:36px;border-radius:10px;font-size:20px;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;justify-content:center}
+.mstat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px 15px;flex-shrink:0;text-align:center}
+#loadscreen{position:fixed;inset:0;background:#15130E;display:flex;align-items:center;justify-content:center;z-index:300;flex-direction:column;gap:12px}
+#loadscreen.gone{display:none}
+.saving{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));right:16px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.3);color:#C8A96E;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;z-index:500;opacity:0;transition:opacity .3s}
+.saving.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div id="loadscreen">
+  <div style="font-size:36px" id="licon">📦</div>
+  <div id="ltxt" style="color:rgba(237,233,227,.6);font-size:15px;font-weight:600">Loading your inventory...</div>
+  <div id="lerr" style="color:#D4826A;font-size:11px;max-width:300px;text-align:center;margin-top:4px"></div>
+</div>
+
+<div class="saving" id="savebadge">Saving...</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-row">
+      <div>
+        <div class="app-eyebrow">Amazon</div>
+        <div class="app-title">Liquidation Sales</div>
+      </div>
+      <button class="add-btn" onclick="openAdd()">+ Add</button>
+    </div>
+  </div>
+
+  <div id="phome" class="page on">
+    <div class="hero">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:rgba(200,169,110,.6);text-transform:uppercase;margin-bottom:6px">Total Profit</div>
+      <div id="hprofit" style="font-size:46px;font-weight:800;color:#C8A96E;letter-spacing:-2px;line-height:1">$0</div>
+      <div id="hsub" style="font-size:12px;color:rgba(237,233,227,.4);margin-top:8px">0 sold</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi"><div id="kinv" style="font-weight:800;font-size:19px;color:#7EB8C9">$0</div><div style="font-size:11px;color:rgba(237,233,227,.35);margin-top:3px">Invested</div></div>
+      <div class="kpi"><div id="kpend" style="font-weight:800;font-size:19px;color:#C8A96E">$0</div><div style="font-size:11px;color:rgba(237,233,227,.35);margin-top:3px">Pending</div></div>
+      <div class="kpi"><div id="ksr" style="font-weight:800;font-size:19px;color:#7CB87A">0%</div><div style="font-size:11px;color:rgba(237,233,227,.35);margin-top:3px">Sell Rate</div></div>
+    </div>
+    <div class="card" style="padding:16px 10px 8px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:rgba(237,233,227,.4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px">Monthly Profit</div>
+      <canvas id="mchart" height="150"></canvas>
+    </div>
+    <div class="sg">
+      <div class="sp" style="background:rgba(124,184,122,.12)"><div style="font-size:20px;margin-bottom:4px">&#x2705;</div><div id="ssold" style="font-weight:800;font-size:22px;color:#7CB87A">0</div><div style="font-size:11px;color:#7CB87A;opacity:.7;margin-top:2px">Sold</div></div>
+      <div class="sp" style="background:rgba(200,169,110,.1)"><div style="font-size:20px;margin-bottom:4px">&#x1F4E6;</div><div id="suns" style="font-weight:800;font-size:22px;color:#C8A96E">0</div><div style="font-size:11px;color:#C8A96E;opacity:.7;margin-top:2px">In Stock</div></div>
+      <div class="sp" style="background:rgba(212,130,106,.1)"><div style="font-size:20px;margin-bottom:4px">&#x2715;</div><div id="sdns" style="font-weight:800;font-size:22px;color:#D4826A">0</div><div style="font-size:11px;color:#D4826A;opacity:.7;margin-top:2px">No Sale</div></div>
+    </div>
+    <div class="sec">Categories</div>
+    <div class="card" id="catlist" style="overflow:hidden"></div>
+  </div>
+
+  <div id="pitems" class="page">
+    <div class="search-wrap">
+      <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:rgba(237,233,227,.3);pointer-events:none">&#x1F50D;</span>
+      <input class="si" id="srch" placeholder="Search items..." oninput="renderItems()" type="search">
+    </div>
+    <div class="filters" id="fpills"></div>
+    <div class="card" id="ilist" style="overflow:hidden"></div>
+  </div>
+
+  <div id="preports" class="page">
+    <div class="card" style="padding:16px 10px 8px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:rgba(237,233,227,.4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px">Profit by Category</div>
+      <canvas id="cchart"></canvas>
+    </div>
+    <div class="sec">Awaiting Sale</div>
+    <div class="card" id="awlist" style="overflow:hidden;margin-bottom:14px"></div>
+    <div class="sec">Top ROI Flips</div>
+    <div class="card" id="roilist" style="overflow:hidden"></div>
+  </div>
+
+  <div class="tabbar">
+    <button class="tb on" onclick="swTab('home',this)"><span class="ic">&#x26A1;</span><span class="lb">Home</span></button>
+    <button class="tb" onclick="swTab('items',this)"><span class="ic">&#x1F4CB;</span><span class="lb">Items</span></button>
+    <button class="tb" onclick="swTab('reports',this)"><span class="ic">&#x1F4CA;</span><span class="lb">Reports</span></button>
+  </div>
+</div>
+
+<div id="catscreen">
+  <div class="catheader">
+    <button class="backbtn" onclick="closeCat()">&#8249;</button>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div id="caticon" style="width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0"></div>
+      <div>
+        <div id="cattitle" style="font-weight:800;font-size:19px;color:#EDE9E3;letter-spacing:-.03em"></div>
+        <div id="catcount" style="font-size:12px;color:rgba(237,233,227,.35);margin-top:2px"></div>
+      </div>
+    </div>
+    <div id="catstats" style="display:flex;gap:8px;padding-bottom:16px;overflow-x:auto"></div>
+  </div>
+  <div style="padding:12px 16px 0">
+    <div class="card" id="catitems" style="overflow:hidden"></div>
+  </div>
+</div>
+
+<div class="modal-ov" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-sh">
+    <div style="width:32px;height:3px;background:rgba(255,255,255,.13);border-radius:2px;margin:0 auto 18px"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div id="mtitle" style="font-weight:800;font-size:18px;color:#EDE9E3;letter-spacing:-.02em">New Item</div>
+      <button onclick="closeModal()" style="background:rgba(255,255,255,.07);border:none;color:rgba(237,233,227,.6);border-radius:8px;width:30px;height:30px;font-size:15px;cursor:pointer">&#x2715;</button>
+    </div>
+    <label class="fl">Item Name</label>
+    <input class="fi" id="fname" placeholder="e.g. Gold Chandelier" oninput="uprev()">
+    <label class="fl">Category</label>
+    <input class="fi" id="fcat" list="catsdl" placeholder="e.g. Indoor Lighting">
+    <datalist id="catsdl"></datalist>
+    <label class="fl">Brand (optional)</label>
+    <input class="fi" id="fbrand" placeholder="e.g. Forious">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label class="fl">Paid ($)</label><input class="fi" id="fcost" type="number" min="0" step="0.01" placeholder="0" oninput="uprev()"></div>
+      <div><label class="fl">Sold For ($)</label><input class="fi" id="fsold" type="number" min="0" step="0.01" placeholder="Blank if unsold" oninput="uprev()"></div>
+    </div>
+    <div id="prev" style="display:none;border-radius:10px;padding:10px 14px;margin-bottom:14px;justify-content:space-between">
+      <span id="pproft" style="font-weight:700;font-size:14px"></span>
+      <span id="proi" style="font-size:13px;color:rgba(237,233,227,.4)"></span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label class="fl">Date Purchased</label><input class="fi" id="fdp" type="date"></div>
+      <div><label class="fl">Date Sold</label><input class="fi" id="fds" type="date"></div>
+    </div>
+    <label class="fl">Status</label>
+    <div style="display:flex;gap:8px;margin-bottom:22px">
+      <button class="so" id="oSold" onclick="setSt('sold')">Sold</button>
+      <button class="so" id="oUns" onclick="setSt('unsold')">In Stock</button>
+      <button class="so" id="oDns" onclick="setSt('did_not_sell')">No Sale</button>
+    </div>
+    <button class="sub-btn" id="subbtn" onclick="saveItem()">Add Item</button>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1wMXTAqqtHDsE0RCN7RapIIi9O_nuamD2yQWNZA_GOsDinSoaO9CCFIZapaNPM1WL/exec";
+const RAW = [{"id":1,"name":"LED Makeup Mirror","category":"Miscellaneous","brand":"","cost":15,"soldPrice":null,"profit":null,"datePurchased":null,"dateSold":null,"status":"did_not_sell"},{"id":2,"name":"Wine Decanter","category":"Miscellaneous","brand":"","cost":15,"soldPrice":null,"profit":null,"datePurchased":null,"dateSold":null,"status":"did_not_sell"},{"id":3,"name":"Farmhouse Ceiling Light","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":null,"profit":null,"datePurchased":null,"dateSold":null,"status":"did_not_sell"},{"id":4,"name":"Outdoor RGB Lights","category":"Outdoor Lighting","brand":"","cost":15,"soldPrice":null,"profit":null,"datePurchased":null,"dateSold":null,"status":"did_not_sell"},{"id":5,"name":"Pendent Lights","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":30,"profit":15,"datePurchased":"2025-05-11","dateSold":"2025-05-30","status":"sold"},{"id":6,"name":"Light with Fan","category":"Ceiling Fans","brand":"","cost":9,"soldPrice":85,"profit":76,"datePurchased":null,"dateSold":"2025-01-23","status":"sold"},{"id":7,"name":"Thor Lock","category":"Locks","brand":"","cost":9,"soldPrice":50,"profit":41,"datePurchased":null,"dateSold":"2025-01-30","status":"sold"},{"id":8,"name":"Exhaust Cutout Kit","category":"Miscellaneous","brand":"","cost":15,"soldPrice":80,"profit":65,"datePurchased":null,"dateSold":"2025-01-23","status":"sold"},{"id":9,"name":"Vacuum Sealer","category":"Miscellaneous","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":null,"dateSold":"2025-01-30","status":"sold"},{"id":10,"name":"Faucet","category":"Bathroom Faucet","brand":"","cost":15,"soldPrice":35,"profit":20,"datePurchased":null,"dateSold":"2025-02-06","status":"sold"},{"id":11,"name":"Golf Cart Cooler","category":"Miscellaneous","brand":"","cost":15,"soldPrice":30,"profit":15,"datePurchased":null,"dateSold":"2025-02-03","status":"sold"},{"id":12,"name":"Chandelier","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":100,"profit":85,"datePurchased":null,"dateSold":"2025-02-03","status":"sold"},{"id":13,"name":"RC Construction Set","category":"Miscellaneous","brand":"","cost":15,"soldPrice":30,"profit":15,"datePurchased":null,"dateSold":"2025-02-09","status":"sold"},{"id":14,"name":"Outsmarted Game","category":"Miscellaneous","brand":"","cost":15,"soldPrice":30,"profit":15,"datePurchased":null,"dateSold":"2025-02-06","status":"sold"},{"id":15,"name":"Wall Sconce","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":60,"profit":45,"datePurchased":null,"dateSold":"2025-02-10","status":"sold"},{"id":16,"name":"Stage Lights","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":80,"profit":65,"datePurchased":null,"dateSold":"2025-02-10","status":"sold"},{"id":17,"name":"Golf Playset","category":"Miscellaneous","brand":"","cost":9,"soldPrice":30,"profit":21,"datePurchased":null,"dateSold":"2025-02-10","status":"sold"},{"id":18,"name":"Ceiling Lights","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":null,"dateSold":"2025-02-17","status":"sold"},{"id":19,"name":"Lykus Hard Case","category":"Miscellaneous","brand":"","cost":15,"soldPrice":30,"profit":15,"datePurchased":null,"dateSold":"2025-02-17","status":"sold"},{"id":20,"name":"Wall Sconces 2Pk","category":"Outdoor Lighting","brand":"","cost":9,"soldPrice":50,"profit":41,"datePurchased":null,"dateSold":"2025-02-19","status":"sold"},{"id":21,"name":"Silver Shower Set","category":"Shower Sets","brand":"","cost":15,"soldPrice":90,"profit":75,"datePurchased":null,"dateSold":"2025-02-21","status":"sold"},{"id":22,"name":"Tranquil Turtle","category":"Miscellaneous","brand":"","cost":9,"soldPrice":25,"profit":16,"datePurchased":null,"dateSold":"2025-02-21","status":"sold"},{"id":23,"name":"Pendent Light","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":30,"profit":15,"datePurchased":null,"dateSold":"2025-02-21","status":"sold"},{"id":24,"name":"Green Pendant Light","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":60,"profit":45,"datePurchased":null,"dateSold":"2025-02-24","status":"sold"},{"id":25,"name":"Nut Milk Maker","category":"Miscellaneous","brand":"","cost":15,"soldPrice":25,"profit":10,"datePurchased":null,"dateSold":"2025-02-25","status":"sold"},{"id":26,"name":"Gold Kitchen Faucet","category":"Kitchen Faucet","brand":"","cost":15,"soldPrice":85,"profit":70,"datePurchased":null,"dateSold":"2025-02-25","status":"sold"},{"id":27,"name":"Door Handle Set","category":"Door Handle Set","brand":"","cost":15,"soldPrice":60,"profit":45,"datePurchased":null,"dateSold":"2025-02-27","status":"sold"},{"id":28,"name":"Smart Plug Set","category":"Miscellaneous","brand":"","cost":3,"soldPrice":20,"profit":17,"datePurchased":null,"dateSold":"2025-02-27","status":"sold"},{"id":29,"name":"Gold Chandelier","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":70,"profit":55,"datePurchased":null,"dateSold":"2025-02-28","status":"sold"},{"id":30,"name":"Farm Chandelier","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":65,"profit":50,"datePurchased":null,"dateSold":"2025-02-28","status":"sold"},{"id":31,"name":"Geometric Chandelier","category":"Indoor Lighting","brand":"","cost":7,"soldPrice":65,"profit":58,"datePurchased":null,"dateSold":"2025-03-05","status":"sold"},{"id":32,"name":"Pivo Pod","category":"Miscellaneous","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":null,"dateSold":"2025-03-06","status":"sold"},{"id":33,"name":"Black Faucet","category":"Bathroom Faucet","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":null,"dateSold":"2025-03-06","status":"sold"},{"id":34,"name":"Door Handle Set v2","category":"Door Handle Set","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":null,"dateSold":"2025-03-09","status":"sold"},{"id":35,"name":"Farmhouse Light","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":55,"profit":40,"datePurchased":null,"dateSold":"2025-03-11","status":"sold"},{"id":36,"name":"Nickel Vanity Light","category":"Bathroom Lighting","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":null,"dateSold":"2025-03-12","status":"sold"},{"id":37,"name":"Chrome Long Faucet","category":"Bathroom Faucet","brand":"","cost":15,"soldPrice":40,"profit":25,"datePurchased":null,"dateSold":"2025-03-12","status":"sold"},{"id":38,"name":"Farmhouse Pendant","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":null,"dateSold":"2025-03-12","status":"sold"},{"id":39,"name":"Gold Vanity Light","category":"Bathroom Lighting","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":null,"dateSold":"2025-03-16","status":"sold"},{"id":40,"name":"Hemp Light Fixture","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":null,"dateSold":"2025-03-19","status":"sold"},{"id":41,"name":"LED Bathroom Faucet","category":"Bathroom Faucet","brand":"","cost":15,"soldPrice":55,"profit":40,"datePurchased":null,"dateSold":"2025-03-22","status":"sold"},{"id":42,"name":"Ribbed Ceiling Light","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":null,"dateSold":"2025-03-23","status":"sold"},{"id":43,"name":"Dog Collars","category":"Dog Collars","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":null,"dateSold":"2025-03-24","status":"sold"},{"id":44,"name":"USB Table Lamps","category":"Indoor Lighting","brand":"","cost":20,"soldPrice":65,"profit":45,"datePurchased":null,"dateSold":"2025-04-06","status":"sold"},{"id":45,"name":"Rechargeable Wall Sconces","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":null,"dateSold":"2025-04-13","status":"sold"},{"id":46,"name":"Privacy Door Handles","category":"Door Handle Set","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":null,"dateSold":"2025-04-17","status":"sold"},{"id":47,"name":"Brushed Nickel Shower System","category":"Shower Sets","brand":"","cost":20,"soldPrice":80,"profit":60,"datePurchased":null,"dateSold":"2025-04-16","status":"sold"},{"id":48,"name":"Black Wall Sconces","category":"Indoor Lighting","brand":"","cost":20,"soldPrice":75,"profit":55,"datePurchased":null,"dateSold":"2025-04-14","status":"sold"},{"id":49,"name":"Solar Fence Lights","category":"Outdoor Lighting","brand":"","cost":9,"soldPrice":40,"profit":31,"datePurchased":null,"dateSold":"2025-04-15","status":"sold"},{"id":50,"name":"Silver 2-Light Vanity","category":"Bathroom Lighting","brand":"","cost":15,"soldPrice":35,"profit":20,"datePurchased":null,"dateSold":"2025-04-17","status":"sold"},{"id":51,"name":"Farm Chandelier v2","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":null,"dateSold":"2025-04-21","status":"sold"},{"id":52,"name":"Small Light Fan","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":40,"profit":25,"datePurchased":null,"dateSold":"2025-04-23","status":"sold"},{"id":53,"name":"4-Light Black Vanity","category":"Bathroom Lighting","brand":"","cost":20,"soldPrice":60,"profit":40,"datePurchased":null,"dateSold":"2025-04-23","status":"sold"},{"id":54,"name":"Round Crystal Light","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":40,"profit":25,"datePurchased":null,"dateSold":"2025-04-24","status":"sold"},{"id":55,"name":"Acrylic Chandelier","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":null,"dateSold":"2025-04-26","status":"sold"},{"id":56,"name":"Black Door Handle Set","category":"Door Handle Set","brand":"","cost":15,"soldPrice":40,"profit":25,"datePurchased":null,"dateSold":"2025-05-01","status":"sold"},{"id":57,"name":"Black Kitchen Faucet","category":"Kitchen Faucet","brand":"","cost":15,"soldPrice":20,"profit":5,"datePurchased":null,"dateSold":"2025-04-29","status":"sold"},{"id":58,"name":"Ceiling Fan w/ Light","category":"Ceiling Fans","brand":"","cost":20,"soldPrice":60,"profit":40,"datePurchased":null,"dateSold":"2025-05-06","status":"sold"},{"id":59,"name":"Rose Gold Pendants","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":null,"dateSold":"2025-05-11","status":"sold"},{"id":60,"name":"Silver Rainfall Shower Set","category":"Shower Sets","brand":"","cost":20,"soldPrice":80,"profit":60,"datePurchased":null,"dateSold":"2025-05-12","status":"sold"},{"id":61,"name":"Black 3-Hole Faucet","category":"Bathroom Faucet","brand":"","cost":15,"soldPrice":40,"profit":25,"datePurchased":null,"dateSold":"2025-05-12","status":"sold"},{"id":62,"name":"3-Light Black Vanity","category":"Bathroom Lighting","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":null,"dateSold":"2025-05-13","status":"sold"},{"id":63,"name":"8-Pack Solar Lights","category":"Outdoor Lighting","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":null,"dateSold":"2025-05-13","status":"sold"},{"id":64,"name":"Black Dog Collar","category":"Dog Collars","brand":"","cost":9,"soldPrice":40,"profit":31,"datePurchased":null,"dateSold":"2025-05-15","status":"sold"},{"id":65,"name":"Gold Pendant Light","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":null,"profit":null,"datePurchased":"2025-04-05","dateSold":null,"status":"unsold"},{"id":66,"name":"Brass Table Lamp","category":"Indoor Lighting","brand":"","cost":3,"soldPrice":15,"profit":12,"datePurchased":"2025-04-05","dateSold":"2025-05-25","status":"sold"},{"id":67,"name":"Crystal Wall Sconce","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":20,"profit":5,"datePurchased":"2025-04-05","dateSold":"2025-09-04","status":"sold"},{"id":68,"name":"Raindrop Wall Sconce","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":null,"profit":null,"datePurchased":"2025-04-05","dateSold":null,"status":"unsold"},{"id":69,"name":"Wall Mounted Bidet Set","category":"Miscellaneous","brand":"","cost":15,"soldPrice":30,"profit":15,"datePurchased":"2025-04-05","dateSold":"2025-08-05","status":"sold"},{"id":70,"name":"2 Pack Gold Wall Lamps","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":25,"profit":10,"datePurchased":"2025-04-05","dateSold":"2025-12-29","status":"sold"},{"id":71,"name":"Gold Pendant (Tear Drop)","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":40,"profit":25,"datePurchased":"2025-04-05","dateSold":"2025-06-02","status":"sold"},{"id":72,"name":"Two Pack Pendant Lights Battery","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-04-20","dateSold":"2025-08-30","status":"sold"},{"id":73,"name":"Black Outdoor Hanging Light","category":"Outdoor Lighting","brand":"","cost":15,"soldPrice":30,"profit":15,"datePurchased":"2025-04-20","dateSold":"2025-05-15","status":"sold"},{"id":74,"name":"Three Light LED Crystal Pendant","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-05-01","dateSold":"2025-05-31","status":"sold"},{"id":75,"name":"Gold Hurran Faucet 3 Hole","category":"Bathroom Faucet","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-05-01","dateSold":"2025-06-28","status":"sold"},{"id":76,"name":"Dog Collar Fence","category":"Dog Collars","brand":"","cost":9,"soldPrice":null,"profit":null,"datePurchased":"2025-05-01","dateSold":null,"status":"unsold"},{"id":77,"name":"Matte Black Faucet Single Hole","category":"Bathroom Faucet","brand":"","cost":15,"soldPrice":40,"profit":25,"datePurchased":"2025-05-01","dateSold":"2025-05-26","status":"sold"},{"id":78,"name":"Black Kitchen Pendant Lights 2 Pack","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-05-05","dateSold":"2025-06-06","status":"sold"},{"id":79,"name":"Gold Bathroom Faucet 3 Hole","category":"Bathroom Faucet","brand":"","cost":20,"soldPrice":50,"profit":30,"datePurchased":"2025-05-05","dateSold":"2025-07-20","status":"sold"},{"id":80,"name":"3 Light Gold Semi-Flush Ceiling","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-05-05","dateSold":"2025-05-21","status":"sold"},{"id":81,"name":"Crystal and Fabric Ceiling Light","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":40,"profit":25,"datePurchased":"2025-05-05","dateSold":"2025-06-19","status":"sold"},{"id":82,"name":"Pair of Black Outdoor Wall Lights","category":"Outdoor Lighting","brand":"","cost":15,"soldPrice":40,"profit":25,"datePurchased":"2025-05-11","dateSold":"2025-06-03","status":"sold"},{"id":83,"name":"Black Kitchen Faucet with Deck Plate","category":"Kitchen Faucet","brand":"","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-05-17","dateSold":"2025-05-21","status":"sold"},{"id":84,"name":"Two Light Farmhouse Gold Vanity","category":"Bathroom Lighting","brand":"","cost":21,"soldPrice":50,"profit":29,"datePurchased":"2025-05-17","dateSold":"2025-06-18","status":"sold"},{"id":85,"name":"4 Pack Gold Privacy Door Handles","category":"Door Handle Set","brand":"","cost":21,"soldPrice":50,"profit":29,"datePurchased":"2025-05-17","dateSold":"2025-07-01","status":"sold"},{"id":86,"name":"Pink Acrylic Chandelier","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-05-18","dateSold":"2025-06-06","status":"sold"},{"id":87,"name":"Matte Black Waterfall Faucet","category":"Bathroom Faucet","brand":"","cost":15,"soldPrice":40,"profit":25,"datePurchased":"2025-05-18","dateSold":"2025-05-30","status":"sold"},{"id":88,"name":"Soccer Net Set","category":"Miscellaneous","brand":"","cost":15,"soldPrice":65,"profit":50,"datePurchased":"2025-05-18","dateSold":"2025-05-21","status":"sold"},{"id":89,"name":"Outdoor Wall Light","category":"Outdoor Lighting","brand":"","cost":9,"soldPrice":20,"profit":11,"datePurchased":"2025-05-20","dateSold":"2025-06-25","status":"sold"},{"id":90,"name":"Flushmount Black Ceiling Light","category":"Indoor Lighting","brand":"","cost":9,"soldPrice":30,"profit":21,"datePurchased":"2025-05-20","dateSold":"2025-07-01","status":"sold"},{"id":91,"name":"Aqara U200 Smart Lock","category":"Locks","brand":"","cost":28,"soldPrice":null,"profit":null,"datePurchased":"2025-05-24","dateSold":null,"status":"did_not_sell"},{"id":92,"name":"Solar Post Lights","category":"Outdoor Lighting","brand":"","cost":15,"soldPrice":55,"profit":40,"datePurchased":"2025-05-25","dateSold":"2025-05-29","status":"sold"},{"id":93,"name":"3 Pack Kitchen Pendant Lights","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":80,"profit":65,"datePurchased":"2025-05-25","dateSold":"2025-06-20","status":"sold"},{"id":94,"name":"Olive Green Pendant Light","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-05-25","dateSold":"2025-06-09","status":"sold"},{"id":95,"name":"12 Inch Chrome Shower Set","category":"Shower Sets","brand":"","cost":21,"soldPrice":100,"profit":79,"datePurchased":"2025-05-31","dateSold":"2025-06-01","status":"sold"},{"id":96,"name":"6 Pack Solar Post Lights","category":"Outdoor Lighting","brand":"","cost":21,"soldPrice":55,"profit":34,"datePurchased":"2025-05-31","dateSold":"2025-06-17","status":"sold"},{"id":97,"name":"Gold Single Handle Faucet","category":"Bathroom Faucet","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-06-01","dateSold":"2025-06-01","status":"sold"},{"id":98,"name":"Gold Semi-Flush Ceiling Light","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-06-01","dateSold":"2025-06-03","status":"sold"},{"id":99,"name":"12 Pack Black Floor Registers","category":"Miscellaneous","brand":"","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-06-01","dateSold":"2025-06-01","status":"sold"},{"id":100,"name":"Gold Bathroom Faucet 3 Hole v2","category":"Bathroom Faucet","brand":"","cost":21,"soldPrice":50,"profit":29,"datePurchased":"2025-06-07","dateSold":"2025-06-11","status":"sold"},{"id":101,"name":"7-in-1 Smart Lock","category":"Locks","brand":"","cost":21,"soldPrice":50,"profit":29,"datePurchased":"2025-06-07","dateSold":"2025-06-09","status":"sold"},{"id":102,"name":"6 Pack Brushed Nickel Door Handles","category":"Door Handle Set","brand":"","cost":21,"soldPrice":70,"profit":49,"datePurchased":"2025-06-07","dateSold":"2025-06-15","status":"sold"},{"id":103,"name":"Black 3-Light Geometric Ceiling","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":null,"profit":null,"datePurchased":"2025-06-08","dateSold":null,"status":"did_not_sell"},{"id":104,"name":"Voton Long Gold Faucet","category":"Bathroom Faucet","brand":"Voton","cost":15,"soldPrice":40,"profit":25,"datePurchased":"2025-06-08","dateSold":"2025-06-27","status":"sold"},{"id":105,"name":"Black Three Hole Faucet","category":"Bathroom Faucet","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-06-08","dateSold":"2025-06-16","status":"sold"},{"id":106,"name":"3-Light Bathroom Vanity Black","category":"Bathroom Lighting","brand":"","cost":9,"soldPrice":null,"profit":null,"datePurchased":"2025-06-23","dateSold":null,"status":"unsold"},{"id":107,"name":"8 Pack Black Floor Registers","category":"Miscellaneous","brand":"","cost":15,"soldPrice":55,"profit":40,"datePurchased":"2025-06-29","dateSold":"2025-06-29","status":"sold"},{"id":108,"name":"5 Pack Black Privacy Door Handles","category":"Door Handle Set","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-06-29","dateSold":"2025-07-01","status":"sold"},{"id":109,"name":"8 Pack White Solar Post Lights","category":"Outdoor Lighting","brand":"","cost":15,"soldPrice":40,"profit":25,"datePurchased":"2025-06-29","dateSold":"2025-07-08","status":"sold"},{"id":110,"name":"2 Pack Black Post Lights","category":"Outdoor Lighting","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-06-29","dateSold":"2025-07-18","status":"sold"},{"id":111,"name":"Black Long Single Hole Faucet","category":"Bathroom Faucet","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-07-06","dateSold":"2025-07-18","status":"sold"},{"id":112,"name":"Hurran Chrome 3 Hole Faucet","category":"Bathroom Faucet","brand":"Hurran","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-07-06","dateSold":"2025-07-09","status":"sold"},{"id":113,"name":"Gold 3 Hole Faucet","category":"Bathroom Faucet","brand":"Omenktop","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-07-06","dateSold":"2025-12-30","status":"sold"},{"id":114,"name":"2 Pack Black Outdoor Wall Lights","category":"Outdoor Lighting","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-07-06","dateSold":"2025-07-11","status":"sold"},{"id":115,"name":"Black and Gold 3-Light Vanity","category":"Bathroom Lighting","brand":"","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-07-20","dateSold":"2025-07-23","status":"sold"},{"id":116,"name":"Antique Brass Battery Wall Sconces","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-07-20","dateSold":"2025-07-27","status":"sold"},{"id":117,"name":"Black and Gold Battery Wall Sconces","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-07-20","dateSold":"2025-07-27","status":"sold"},{"id":118,"name":"9-Light Gold Crystal Chandelier","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":100,"profit":85,"datePurchased":"2025-07-20","dateSold":"2025-07-27","status":"sold"},{"id":119,"name":"12 Pack Solar Post Lights Black","category":"Outdoor Lighting","brand":"","cost":21,"soldPrice":80,"profit":59,"datePurchased":"2025-07-26","dateSold":"2025-07-27","status":"sold"},{"id":120,"name":"6 Pack Gold Door Handle Sets","category":"Door Handle Set","brand":"","cost":21,"soldPrice":115,"profit":94,"datePurchased":"2025-07-26","dateSold":"2025-08-11","status":"sold"},{"id":121,"name":"Hornbill Smart Lock with Handle","category":"Locks","brand":"Hornbill","cost":21,"soldPrice":75,"profit":54,"datePurchased":"2025-07-26","dateSold":"2025-08-11","status":"sold"},{"id":122,"name":"Brushed Nickel 3-Light Vanity","category":"Bathroom Lighting","brand":"Dpyrrhic","cost":21,"soldPrice":60,"profit":39,"datePurchased":"2026-01-24","dateSold":"2026-02-14","status":"sold"},{"id":123,"name":"6 Pack Black Solar Post Lights","category":"Outdoor Lighting","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-07-27","dateSold":"2025-08-05","status":"sold"},{"id":124,"name":"Black Rainfall Shower and Bathtub Filler","category":"Shower Sets","brand":"","cost":15,"soldPrice":90,"profit":75,"datePurchased":"2025-07-27","dateSold":"2025-09-07","status":"sold"},{"id":125,"name":"Rustic Black Forest Ceiling Light","category":"Indoor Lighting","brand":"","cost":21,"soldPrice":70,"profit":49,"datePurchased":"2025-08-02","dateSold":"2025-09-07","status":"sold"},{"id":126,"name":"USB Table Lamps 2 Pack","category":"Indoor Lighting","brand":"","cost":21,"soldPrice":85,"profit":64,"datePurchased":"2025-08-02","dateSold":"2025-09-07","status":"sold"},{"id":128,"name":"6 Pack Matte Black Dummy Door Handles","category":"Door Handle Set","brand":"","cost":15,"soldPrice":25,"profit":10,"datePurchased":"2025-08-03","dateSold":"2025-12-12","status":"sold"},{"id":129,"name":"Boho Style Chandelier","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":75,"profit":60,"datePurchased":"2025-08-04","dateSold":"2025-09-07","status":"sold"},{"id":130,"name":"Gold Classic Three Hole Faucet","category":"Bathroom Faucet","brand":"","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-08-05","dateSold":"2025-09-07","status":"sold"},{"id":131,"name":"Matte Black Door Handle w/ Deadbolt","category":"Door Handle Set","brand":"","cost":9,"soldPrice":40,"profit":31,"datePurchased":"2025-08-11","dateSold":"2025-11-22","status":"sold"},{"id":132,"name":"Black and Gold Flush Mount Ceiling","category":"Indoor Lighting","brand":"","cost":9,"soldPrice":30,"profit":21,"datePurchased":"2025-08-11","dateSold":"2025-11-22","status":"sold"},{"id":133,"name":"White and Gold Semi-Flush Ceiling","category":"Indoor Lighting","brand":"","cost":9,"soldPrice":40,"profit":31,"datePurchased":"2025-08-11","dateSold":"2025-11-02","status":"sold"},{"id":134,"name":"6 Pack Black Privacy Door Handles","category":"Door Handle Set","brand":"","cost":15,"soldPrice":65,"profit":50,"datePurchased":"2025-08-17","dateSold":"2025-09-07","status":"sold"},{"id":135,"name":"Large Olive Green Pendant Light","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-08-13","dateSold":"2025-08-30","status":"sold"},{"id":136,"name":"2 Pack Vintage Brass Pendant Lights","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":40,"profit":25,"datePurchased":"2025-08-05","dateSold":"2025-08-30","status":"sold"},{"id":137,"name":"Round Farmhouse Chandelier","category":"Indoor Lighting","brand":"Xingqi","cost":21,"soldPrice":50,"profit":29,"datePurchased":"2025-08-23","dateSold":"2025-12-12","status":"sold"},{"id":139,"name":"52 Inch Ceiling Fan with Light","category":"Ceiling Fans","brand":"","cost":21,"soldPrice":90,"profit":69,"datePurchased":"2025-08-23","dateSold":"2025-09-01","status":"sold"},{"id":140,"name":"10 Inch Matte Black Rainfall Shower","category":"Shower Sets","brand":"","cost":21,"soldPrice":90,"profit":69,"datePurchased":"2025-08-23","dateSold":"2025-09-04","status":"sold"},{"id":141,"name":"8 Pack Black Floor Registers","category":"Miscellaneous","brand":"","cost":21,"soldPrice":70,"profit":49,"datePurchased":"2025-08-23","dateSold":"2025-09-04","status":"sold"},{"id":142,"name":"Brushed Nickel Farmhouse Kitchen Faucet","category":"Kitchen Faucet","brand":"","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-08-23","dateSold":"2025-08-31","status":"sold"},{"id":143,"name":"3-Light Silver Farmhouse Chandelier","category":"Indoor Lighting","brand":"Lightdamy","cost":21,"soldPrice":null,"profit":null,"datePurchased":"2025-08-23","dateSold":null,"status":"unsold"},{"id":144,"name":"Multi-Colour LED Floor Lamp","category":"Indoor Lighting","brand":"Gyrovu","cost":21,"soldPrice":50,"profit":29,"datePurchased":"2025-08-30","dateSold":"2025-12-10","status":"sold"},{"id":145,"name":"3-Light Gold Floor Lamp","category":"Indoor Lighting","brand":"Brightech","cost":21,"soldPrice":80,"profit":59,"datePurchased":"2025-08-30","dateSold":"2025-09-12","status":"sold"},{"id":146,"name":"3-Pack White Pendant Lights","category":"Indoor Lighting","brand":"Elyona","cost":21,"soldPrice":70,"profit":49,"datePurchased":"2025-08-30","dateSold":"2025-09-11","status":"sold"},{"id":147,"name":"6 Pack Smoke Detectors","category":"Miscellaneous","brand":"Siterwell","cost":21,"soldPrice":70,"profit":49,"datePurchased":"2025-08-30","dateSold":"2025-10-06","status":"sold"},{"id":148,"name":"Matte Black Shower Set w/ Bathtub Spout","category":"Shower Sets","brand":"Wrisin","cost":21,"soldPrice":60,"profit":39,"datePurchased":"2025-08-30","dateSold":"2025-10-13","status":"sold"},{"id":149,"name":"8 Pack Privacy Door Handle Sets","category":"Door Handle Set","brand":"","cost":21,"soldPrice":80,"profit":59,"datePurchased":"2025-08-30","dateSold":"2025-08-28","status":"sold"},{"id":150,"name":"4 Pack Round Black Door Handles","category":"Door Handle Set","brand":"Asidrama","cost":21,"soldPrice":65,"profit":44,"datePurchased":"2025-08-30","dateSold":"2025-09-18","status":"sold"},{"id":151,"name":"8-Light Black/Gold Sputnik Chandelier","category":"Indoor Lighting","brand":"","cost":15,"soldPrice":null,"profit":null,"datePurchased":"2025-08-31","dateSold":null,"status":"did_not_sell"},{"id":152,"name":"Black Front Door Handle w/ Deadbolt","category":"Door Handle Set","brand":"Ohuhu","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-08-31","dateSold":"2025-09-06","status":"sold"},{"id":153,"name":"Tall Vessel Black Faucet","category":"Bathroom Faucet","brand":"Fransiton","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-08-31","dateSold":"2025-09-21","status":"sold"},{"id":154,"name":"4 Pack Outdoor Wall Lights","category":"Outdoor Lighting","brand":"","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-08-31","dateSold":"2025-09-03","status":"sold"},{"id":155,"name":"Multi-Colour Solar Post Lights 6 Pack","category":"Outdoor Lighting","brand":"Aeyanzz","cost":21,"soldPrice":70,"profit":49,"datePurchased":"2025-09-06","dateSold":"2025-09-21","status":"sold"},{"id":156,"name":"8 Pack Bronze Solar Post Lights","category":"Outdoor Lighting","brand":"Huyieno","cost":21,"soldPrice":55,"profit":34,"datePurchased":"2025-09-06","dateSold":"2025-10-19","status":"sold"},{"id":157,"name":"4 Pack Square Matte Black Passage Handles","category":"Door Handle Set","brand":"Filta","cost":21,"soldPrice":60,"profit":39,"datePurchased":"2025-09-06","dateSold":"2025-09-14","status":"sold"},{"id":158,"name":"Glass Flower Semi-Flush Ceiling Light","category":"Indoor Lighting","brand":"Shbeilou","cost":15,"soldPrice":70,"profit":55,"datePurchased":"2025-09-07","dateSold":"2025-09-09","status":"sold"},{"id":159,"name":"Classic Gold 3-Hole Bathroom Faucet","category":"Bathroom Faucet","brand":"Weijiankang","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-09-07","dateSold":"2025-09-12","status":"sold"},{"id":160,"name":"Chrome Farmhouse Faucet w/ Deck Plate","category":"Kitchen Faucet","brand":"Forious","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-09-13","dateSold":"2025-09-13","status":"sold"},{"id":161,"name":"Nickel Farmhouse Faucet (New)","category":"Kitchen Faucet","brand":"Forious","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-09-13","dateSold":"2025-09-15","status":"sold"},{"id":162,"name":"Nickel Farmhouse Faucet (Used)","category":"Kitchen Faucet","brand":"Forious","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-09-13","dateSold":"2025-09-17","status":"sold"},{"id":163,"name":"Pack of 2 Night Table Lamps Ceramic","category":"Indoor Lighting","brand":"Reaketon","cost":21,"soldPrice":70,"profit":49,"datePurchased":"2025-09-13","dateSold":"2025-09-13","status":"sold"},{"id":164,"name":"Pack of 10 Black Round Passage Handles","category":"Door Handle Set","brand":"Probrico","cost":21,"soldPrice":85,"profit":64,"datePurchased":"2025-09-13","dateSold":"2025-09-29","status":"sold"},{"id":165,"name":"4 Pack Matte Black Privacy Handles","category":"Door Handle Set","brand":"","cost":9,"soldPrice":45,"profit":36,"datePurchased":"2025-09-15","dateSold":"2025-09-21","status":"sold"},{"id":166,"name":"2-Light White/Gold Ceiling Light","category":"Indoor Lighting","brand":"Zeyu","cost":9,"soldPrice":40,"profit":31,"datePurchased":"2025-09-15","dateSold":"2025-11-08","status":"sold"},{"id":167,"name":"Nickel Farmhouse Faucet (New) v2","category":"Kitchen Faucet","brand":"Forious","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-09-20","dateSold":"2025-09-20","status":"sold"},{"id":168,"name":"Black Touchless Kitchen Faucet","category":"Kitchen Faucet","brand":"Forious","cost":15,"soldPrice":75,"profit":60,"datePurchased":"2025-09-20","dateSold":"2025-09-26","status":"sold"},{"id":169,"name":"Gold Kitchen Faucet w/ Deck Plate","category":"Kitchen Faucet","brand":"Forious","cost":15,"soldPrice":75,"profit":60,"datePurchased":"2025-09-20","dateSold":"2025-09-23","status":"sold"},{"id":170,"name":"Black Hydroelectric Sensor Faucet","category":"Bathroom Faucet","brand":"Singsuo","cost":21,"soldPrice":60,"profit":39,"datePurchased":"2025-09-20","dateSold":"2025-10-19","status":"sold"},{"id":171,"name":"Pack of 10 Black Round Passage Handles v2","category":"Door Handle Set","brand":"Probrico","cost":21,"soldPrice":75,"profit":54,"datePurchased":"2025-09-20","dateSold":"2025-10-06","status":"sold"},{"id":172,"name":"Nickel Faucet w/ Deck Plate & Soap Dispenser","category":"Kitchen Faucet","brand":"WOWOW","cost":15,"soldPrice":70,"profit":55,"datePurchased":"2025-09-27","dateSold":"2025-10-01","status":"sold"},{"id":173,"name":"Nickel Faucet w/ Deck Plate (New)","category":"Kitchen Faucet","brand":"WOWOW","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-10-04","dateSold":"2025-10-10","status":"sold"},{"id":174,"name":"Square Gold Kitchen Faucet","category":"Kitchen Faucet","brand":"Stylish","cost":15,"soldPrice":80,"profit":65,"datePurchased":"2025-10-04","dateSold":"2025-10-06","status":"sold"},{"id":175,"name":"Boho Style Gold Mini Chandelier","category":"Indoor Lighting","brand":"Elyccupa","cost":21,"soldPrice":65,"profit":44,"datePurchased":"2025-10-04","dateSold":"2025-11-20","status":"sold"},{"id":176,"name":"Pair of Black Hammered Pendants","category":"Indoor Lighting","brand":"Elyona","cost":15,"soldPrice":65,"profit":50,"datePurchased":"2025-10-12","dateSold":"2025-10-19","status":"sold"},{"id":177,"name":"Pack of 6 Round Silver Privacy Handles","category":"Door Handle Set","brand":"Aeekel","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-10-12","dateSold":"2025-10-31","status":"sold"},{"id":178,"name":"Chrome Wide 3-Hole Bathroom Faucet","category":"Bathroom Faucet","brand":"Delta","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-10-12","dateSold":"2025-11-02","status":"sold"},{"id":179,"name":"Antique Nickel 3-Hole Faucet","category":"Bathroom Faucet","brand":"GGStudy","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-10-12","dateSold":"2025-10-29","status":"sold"},{"id":180,"name":"20\" Modern Flush Mount Ceiling Fan","category":"Ceiling Fans","brand":"Lediary","cost":15,"soldPrice":null,"profit":null,"datePurchased":"2025-10-12","dateSold":null,"status":"did_not_sell"},{"id":181,"name":"20\" Modern Ceiling Fan with Lights","category":"Ceiling Fans","brand":"Lediary","cost":15,"soldPrice":55,"profit":40,"datePurchased":"2025-10-12","dateSold":"2025-10-21","status":"sold"},{"id":182,"name":"White 40\" Ceiling Fan with Lights","category":"Ceiling Fans","brand":"Ohniyou","cost":15,"soldPrice":40,"profit":25,"datePurchased":"2025-10-12","dateSold":"2025-11-01","status":"sold"},{"id":183,"name":"Gold Semi-Flush w/ Crystal Shades","category":"Indoor Lighting","brand":"Pauful","cost":9,"soldPrice":40,"profit":31,"datePurchased":"2025-10-13","dateSold":"2025-10-23","status":"sold"},{"id":184,"name":"Gold 5-Light Boho Chandelier","category":"Indoor Lighting","brand":"Hoxiya","cost":15,"soldPrice":80,"profit":65,"datePurchased":"2025-10-19","dateSold":"2025-10-23","status":"sold"},{"id":185,"name":"Crystal 2-Tier Ceiling Light","category":"Indoor Lighting","brand":"Leontyne","cost":15,"soldPrice":40,"profit":25,"datePurchased":"2025-10-19","dateSold":"2025-11-12","status":"sold"},{"id":186,"name":"Chrome Waterfall Shower w/ Hand Sprayer","category":"Shower Sets","brand":"Tudoccy","cost":15,"soldPrice":40,"profit":25,"datePurchased":"2025-10-19","dateSold":"2025-10-23","status":"sold"},{"id":187,"name":"Black Aluminum Post Caps","category":"Miscellaneous","brand":"DN Mate","cost":15,"soldPrice":null,"profit":null,"datePurchased":"2025-10-19","dateSold":null,"status":"unsold"},{"id":188,"name":"Black Kitchen Faucet w/ Deck Plate","category":"Kitchen Faucet","brand":"Forious","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-10-19","dateSold":"2025-10-20","status":"sold"},{"id":189,"name":"Black Farmhouse Kitchen Faucet","category":"Kitchen Faucet","brand":"Danpiang","cost":15,"soldPrice":45,"profit":30,"datePurchased":"2025-10-19","dateSold":"2025-10-21","status":"sold"},{"id":190,"name":"Gold Kitchen Faucet w/ Deck Plate v2","category":"Kitchen Faucet","brand":"Fopro","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-10-19","dateSold":"2025-11-04","status":"sold"},{"id":191,"name":"Brushed Nickel RV Faucet","category":"Kitchen Faucet","brand":"Dura Faucet","cost":15,"soldPrice":55,"profit":40,"datePurchased":"2025-10-26","dateSold":"2025-11-07","status":"sold"},{"id":192,"name":"Modern Olive Pendant Light","category":"Indoor Lighting","brand":"Tehenoo","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-10-26","dateSold":"2025-11-01","status":"sold"},{"id":193,"name":"Black Flush Mount Ceiling Fan","category":"Ceiling Fans","brand":"Hordxin","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-10-26","dateSold":"2025-10-29","status":"sold"},{"id":194,"name":"LED Temporary Construction Light","category":"Outdoor Lighting","brand":"JC-LGL","cost":15,"soldPrice":65,"profit":50,"datePurchased":"2025-10-26","dateSold":"2025-10-28","status":"sold"},{"id":195,"name":"Vintage Chrome Shower Kit w/ Tub Spout","category":"Shower Sets","brand":"Aolemi","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-10-26","dateSold":"2025-11-07","status":"sold"},{"id":196,"name":"Brushed Nickel Dual Shower (Missing Valve)","category":"Shower Sets","brand":"Aolemi","cost":15,"soldPrice":null,"profit":null,"datePurchased":"2025-10-26","dateSold":null,"status":"unsold"},{"id":197,"name":"LED Construction Light v2","category":"Outdoor Lighting","brand":"JC-LGL","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-11-02","dateSold":"2025-11-15","status":"sold"},{"id":198,"name":"10 Pack Brown Metal Floor Registers","category":"Miscellaneous","brand":"Byewire","cost":21,"soldPrice":70,"profit":49,"datePurchased":"2025-11-08","dateSold":"2025-11-18","status":"sold"},{"id":199,"name":"Black Kitchen Faucet with Deck Plate","category":"Kitchen Faucet","brand":"Makein","cost":21,"soldPrice":50,"profit":29,"datePurchased":"2025-11-08","dateSold":"2025-11-30","status":"sold"},{"id":200,"name":"Farmhouse Caged Ceiling Fan w/ Lights","category":"Indoor Lighting","brand":"Depuley","cost":21,"soldPrice":85,"profit":64,"datePurchased":"2025-11-08","dateSold":"2025-11-18","status":"sold"},{"id":201,"name":"10\" Chrome Shower System with Filter","category":"Shower Sets","brand":"ifealclear","cost":21,"soldPrice":60,"profit":39,"datePurchased":"2025-11-08","dateSold":"2025-12-31","status":"sold"},{"id":202,"name":"Black Battery Operated Wall Sconces","category":"Indoor Lighting","brand":"Niorsun","cost":9,"soldPrice":65,"profit":56,"datePurchased":"2025-11-12","dateSold":null,"status":"unsold"},{"id":203,"name":"Door Lock and Video Camera","category":"Locks","brand":"","cost":9,"soldPrice":null,"profit":null,"datePurchased":"2025-11-12","dateSold":null,"status":"did_not_sell"},{"id":204,"name":"52\" White Ceiling Fan with Light","category":"Ceiling Fans","brand":"Fumltp","cost":21,"soldPrice":75,"profit":54,"datePurchased":"2025-11-14","dateSold":"2025-12-12","status":"sold"},{"id":205,"name":"Gold 12\" Rainfall Shower Set w/ Handheld","category":"Shower Sets","brand":"Longriver","cost":21,"soldPrice":80,"profit":59,"datePurchased":"2025-11-14","dateSold":"2025-12-04","status":"sold"},{"id":206,"name":"White Ring 6-Light Ceiling Light","category":"Indoor Lighting","brand":"Teminbu","cost":15,"soldPrice":55,"profit":40,"datePurchased":"2025-11-23","dateSold":"2025-11-23","status":"sold"},{"id":207,"name":"12 Pack Black Solar Post Lights","category":"Outdoor Lighting","brand":"Aponuo","cost":15,"soldPrice":70,"profit":55,"datePurchased":"2025-11-30","dateSold":"2025-12-23","status":"sold"},{"id":208,"name":"2 Pack Black Outdoor Wall Lights","category":"Outdoor Lighting","brand":"Emlivar","cost":15,"soldPrice":50,"profit":35,"datePurchased":"2025-11-30","dateSold":"2025-12-02","status":"sold"},{"id":209,"name":"Nickel Single Handle Bathroom Faucet","category":"Bathroom Faucet","brand":"TimeArrow","cost":15,"soldPrice":55,"profit":40,"datePurchased":"2025-11-30","dateSold":"2025-12-23","status":"sold"},{"id":210,"name":"Black Shower Set with Tub Spout","category":"Shower Sets","brand":"Wrisin","cost":15,"soldPrice":60,"profit":45,"datePurchased":"2025-11-30","dateSold":"2025-12-22","status":"sold"},{"id":211,"name":"8 Pack Photoelectric Smoke Detectors","category":"Miscellaneous","brand":"Siterwell","cost":21,"soldPrice":80,"profit":59,"datePurchased":"2025-12-06","dateSold":"2025-12-28","status":"sold"},{"id":212,"name":"10 Pack Black Passage Door Handle Sets","category":"Door Handle Set","brand":"Gobekor","cost":21,"soldPrice":90,"profit":69,"datePurchased":"2025-12-13","dateSold":"2025-12-14","status":"sold"},{"id":213,"name":"4 Pack Solar Flood Lights","category":"Outdoor Lighting","brand":"Jaynlt","cost":21,"soldPrice":90,"profit":69,"datePurchased":"2025-12-13","dateSold":"2025-12-14","status":"sold"},{"id":214,"name":"20\" Ceiling Fan with Lights","category":"Ceiling Fans","brand":"Volisun","cost":21,"soldPrice":null,"profit":null,"datePurchased":"2025-12-20","dateSold":null,"status":"did_not_sell"},{"id":215,"name":"6-Light Black Farmhouse Chandelier","category":"Indoor Lighting","brand":"Tcwgaui","cost":21,"soldPrice":95,"profit":74,"datePurchased":"2025-12-20","dateSold":"2026-01-05","status":"sold"},{"id":216,"name":"10\" Matte Black Rainfall Shower","category":"Shower Sets","brand":"Lcevcgk","cost":21,"soldPrice":20,"profit":-1,"datePurchased":"2025-12-20","dateSold":"2026-02-05","status":"sold"},{"id":217,"name":"18\" Black and Gold Pendant Light","category":"Indoor Lighting","brand":"Haolaike","cost":21,"soldPrice":50,"profit":29,"datePurchased":"2025-12-27","dateSold":"2026-02-05","status":"sold"},{"id":218,"name":"18\" Black and Gold Pendant Light v2","category":"Indoor Lighting","brand":"Haolaike","cost":21,"soldPrice":50,"profit":29,"datePurchased":"2025-12-27","dateSold":"2026-02-05","status":"sold"},{"id":219,"name":"2 Pack Black Large Outdoor Lights w/ Sensors","category":"Outdoor Lighting","brand":"Myhxq","cost":21,"soldPrice":65,"profit":44,"datePurchased":"2025-12-27","dateSold":"2026-02-22","status":"sold"},{"id":220,"name":"3 Pack Black Hammered Pendant Lights","category":"Indoor Lighting","brand":"Holohatal","cost":21,"soldPrice":75,"profit":54,"datePurchased":"2025-12-27","dateSold":"2026-01-22","status":"sold"},{"id":221,"name":"Modern Multiple Square Ceiling Light","category":"Indoor Lighting","brand":"Stch","cost":21,"soldPrice":90,"profit":69,"datePurchased":"2025-12-27","dateSold":"2025-12-30","status":"sold"},{"id":222,"name":"Pack of 2 Night Table Lamps","category":"Indoor Lighting","brand":"Cinkdda","cost":21,"soldPrice":75,"profit":54,"datePurchased":"2026-01-03","dateSold":"2026-01-09","status":"sold"},{"id":223,"name":"Pack of 3 Brushed Nickel Farmhouse Pendants","category":"Indoor Lighting","brand":"Alaislyc","cost":21,"soldPrice":70,"profit":49,"datePurchased":"2026-01-03","dateSold":"2026-01-09","status":"sold"},{"id":224,"name":"Pack of 2 Outdoor Solar Flood Lights","category":"Outdoor Lighting","brand":"Jaynlt","cost":21,"soldPrice":70,"profit":49,"datePurchased":"2026-01-03","dateSold":"2026-01-08","status":"sold"},{"id":225,"name":"100ft Outdoor Permanent RGB Lights","category":"Outdoor Lighting","brand":"Appeck","cost":21,"soldPrice":null,"profit":null,"datePurchased":"2026-01-10","dateSold":null,"status":"unsold"},{"id":226,"name":"9 Pack Round Nickel Privacy Door Handles","category":"Door Handle Set","brand":"Gobekor","cost":21,"soldPrice":60,"profit":39,"datePurchased":"2026-01-10","dateSold":"2026-01-12","status":"sold"},{"id":227,"name":"24\" White Flower Ceiling Fan","category":"Ceiling Fans","brand":"Dalouguan","cost":21,"soldPrice":70,"profit":49,"datePurchased":"2026-01-17","dateSold":"2026-01-19","status":"sold"},{"id":228,"name":"Pack of 2 Beige Night Table Lamps w/ USB","category":"Indoor Lighting","brand":"Rinweey","cost":21,"soldPrice":70,"profit":49,"datePurchased":"2026-01-17","dateSold":"2026-02-14","status":"sold"},{"id":229,"name":"Black Folding Wagon Cart","category":"Miscellaneous","brand":"Hikenture","cost":21,"soldPrice":65,"profit":44,"datePurchased":"2026-01-17","dateSold":"2026-01-19","status":"sold"},{"id":230,"name":"Nickel Farmhouse Faucet w/ Deck Plate","category":"Kitchen Faucet","brand":"Huaake","cost":9,"soldPrice":null,"profit":null,"datePurchased":"2026-01-19","dateSold":null,"status":"unsold"},{"id":231,"name":"Brown Glass Pendant Light","category":"Indoor Lighting","brand":"HWH","cost":9,"soldPrice":null,"profit":null,"datePurchased":"2026-01-19","dateSold":null,"status":"unsold"},{"id":232,"name":"TV LED Backlight Strip 55-65\"","category":"Indoor Lighting","brand":"FFJ","cost":9,"soldPrice":null,"profit":null,"datePurchased":"2026-01-20","dateSold":null,"status":"unsold"},{"id":233,"name":"Smart Thermostat for In-Floor Heating","category":"Miscellaneous","brand":"Mysa","cost":9,"soldPrice":85,"profit":76,"datePurchased":"2026-01-20","dateSold":"2026-01-20","status":"sold"},{"id":234,"name":"Airdual Bluetooth Adapter","category":"Miscellaneous","brand":"Invery","cost":9,"soldPrice":null,"profit":null,"datePurchased":"2026-01-20","dateSold":null,"status":"unsold"},{"id":235,"name":"Gold 3-Light Vanity w/ Milky Shades","category":"Bathroom Lighting","brand":"Brknit","cost":22.6,"soldPrice":null,"profit":null,"datePurchased":"2026-01-24","dateSold":null,"status":"unsold"},{"id":236,"name":"Pack of 2 Black Gooseneck Outdoor Lights","category":"Outdoor Lighting","brand":"Goalplus","cost":21,"soldPrice":null,"profit":null,"datePurchased":"2026-01-24","dateSold":null,"status":"unsold"},{"id":237,"name":"3-Light Metal and Wood Farmhouse Ceiling","category":"Indoor Lighting","brand":"Huismier","cost":21,"soldPrice":60,"profit":39,"datePurchased":"2026-01-24","dateSold":"2026-02-09","status":"sold"},{"id":238,"name":"Nickel Three Hole Waterfall Faucet","category":"Bathroom Faucet","brand":"Qisheng","cost":21,"soldPrice":null,"profit":null,"datePurchased":"2026-01-24","dateSold":null,"status":"unsold"},{"id":239,"name":"Nickel Pull-Down Faucet","category":"Kitchen Faucet","brand":"Kicimpro","cost":21,"soldPrice":50,"profit":29,"datePurchased":"2026-01-24","dateSold":"2026-02-24","status":"sold"},{"id":240,"name":"Nickel Smart Door Lock","category":"Door Locks","brand":"Viese","cost":21,"soldPrice":60,"profit":39,"datePurchased":"2026-01-24","dateSold":"2026-02-01","status":"sold"},{"id":241,"name":"42\" Ceiling Fan with Lights","category":"Ceiling Fans","brand":"Batqueen","cost":21,"soldPrice":60,"profit":39,"datePurchased":"2026-01-31","dateSold":"2026-02-03","status":"sold"},{"id":242,"name":"20 Pack 4\" Slim Recessed Pot Lights","category":"Indoor Lighting","brand":"Lediary","cost":22.6,"soldPrice":100,"profit":77.4,"datePurchased":"2026-02-07","dateSold":"2026-02-09","status":"sold"},{"id":243,"name":"2 Pack Black & White Pendant Lights","category":"Indoor Lighting","brand":"Guihhualove","cost":22.6,"soldPrice":null,"profit":null,"datePurchased":"2026-02-03","dateSold":null,"status":"unsold"},{"id":245,"name":"Flushmount Ceiling Fan White Flower","category":"Ceiling Fans","brand":"Linboro","cost":22.6,"soldPrice":70,"profit":47.4,"datePurchased":"2026-02-14","dateSold":"2026-02-15","status":"sold"},{"id":246,"name":"20\" Ceiling Fan with Lights White","category":"Ceiling Fans","brand":"Hordxin","cost":22.6,"soldPrice":60,"profit":37.4,"datePurchased":"2026-02-14","dateSold":"2026-02-15","status":"sold"},{"id":247,"name":"Pack of 2 Black Industrial Table Lamps","category":"Indoor Lighting","brand":"Cinkeda","cost":22.6,"soldPrice":60,"profit":37.4,"datePurchased":"2026-02-14","dateSold":"2026-02-28","status":"sold"},{"id":248,"name":"Round Nickel Shower System w/ Hand Sprayer","category":"Shower Sets","brand":"Besy","cost":22.6,"soldPrice":null,"profit":null,"datePurchased":"2026-02-14","dateSold":null,"status":"unsold"},{"id":249,"name":"Round Nickel Shower Set w/ Bathtub Spout","category":"Shower Sets","brand":"Tohlar","cost":22.6,"soldPrice":null,"profit":null,"datePurchased":"2026-02-14","dateSold":null,"status":"unsold"},{"id":250,"name":"Gold Pot Filler Set","category":"Kitchen Faucet","brand":"WOWOW","cost":22.6,"soldPrice":60,"profit":37.4,"datePurchased":"2026-01-24","dateSold":"2026-02-15","status":"sold"},{"id":251,"name":"Black Smart Lock with Fingerprints","category":"Door Locks","brand":"Nyboer","cost":21.5,"soldPrice":75,"profit":53.5,"datePurchased":"2026-02-21","dateSold":"2026-02-25","status":"sold"},{"id":252,"name":"8\" Gold Rainfall Shower Set","category":"Shower Sets","brand":"Joywell","cost":22.6,"soldPrice":null,"profit":null,"datePurchased":"2026-02-21","dateSold":null,"status":"unsold"},{"id":253,"name":"8\" Black Rainfall Shower Set","category":"Shower Sets","brand":"Dalang","cost":22.6,"soldPrice":null,"profit":null,"datePurchased":"2026-02-21","dateSold":null,"status":"unsold"},{"id":254,"name":"18\" White Farmhouse Caged Ceiling Fan","category":"Ceiling Fans","brand":"Wheatronic","cost":22.6,"soldPrice":90,"profit":67.4,"datePurchased":"2026-02-21","dateSold":"2026-02-27","status":"sold"},{"id":255,"name":"Black Modern 5-Light Pendant Fixture","category":"Indoor Lighting","brand":"Liangmh","cost":22.6,"soldPrice":null,"profit":null,"datePurchased":"2026-02-21","dateSold":null,"status":"unsold"},{"id":256,"name":"Pack of 2 Black & Gold Pendant Lights","category":"Indoor Lighting","brand":"Bosomfr","cost":15,"soldPrice":null,"profit":null,"datePurchased":"2026-02-22","dateSold":null,"status":"unsold"},{"id":257,"name":"20\" Ceiling Fan w/ Crystal Lights","category":"Ceiling Fans","brand":"Golovech","cost":22.6,"soldPrice":null,"profit":null,"datePurchased":"2026-02-28","dateSold":null,"status":"unsold"},{"id":258,"name":"Pack of 10 Matte Black Privacy Door Handles","category":"Door Handle Set","brand":"Gobekor","cost":22.6,"soldPrice":null,"profit":null,"datePurchased":"2026-02-28","dateSold":null,"status":"unsold"}];
+
+const COLORS=["#C8A96E","#7EB8C9","#A87BC4","#7CB87A","#D4826A","#7AA3C8","#C8BF6E","#9B7EC8","#7BC8A4","#C87E9B","#8FA87C","#C49A7B"];
+const $n=v=>v==null?"--":"$"+Math.round(v).toLocaleString();
+const dBetween=(a,b)=>{if(!a||!b)return null;const v=Math.floor((new Date(b)-new Date(a))/86400000);return v<0?null:v;};
+const dSince=d=>d?Math.floor((Date.now()-new Date(d))/86400000):null;
+const catColor=(()=>{const m={};let i=0;return c=>{if(!m[c])m[c]=COLORS[i++%COLORS.length];return m[c];};})();
+
+let products=[];
+let editId=null;
+let curStatus="unsold";
+let curFilter="all";
+let curCat=null;
+let mChart=null;
+let cChart=null;
+let saveTimer=null;
+
+function showSaving(){
+  const b=document.getElementById("savebadge");
+  b.textContent="Saving...";b.classList.add("show");
+}
+function showSaved(){
+  const b=document.getElementById("savebadge");
+  b.textContent="Saved!";
+  setTimeout(()=>b.classList.remove("show"),1500);
+}
+
+async function loadFromSheets(){
+  const res=await fetch(SCRIPT_URL);
+  const data=await res.json();
+  if(!Array.isArray(data)||data.length===0) return false;
+  products=data.map(r=>({
+    id:Number(r.id)||Date.now(),
+    name:r.name||"",
+    category:r.category||"",
+    brand:r.brand||"",
+    cost:Number(r.cost)||0,
+    soldPrice:r.soldPrice!==""&&r.soldPrice!=null?Number(r.soldPrice):null,
+    profit:r.profit!==""&&r.profit!=null?Number(r.profit):null,
+    datePurchased:r.datePurchased||null,
+    dateSold:r.dateSold||null,
+    status:r.status||"unsold"
+  }));
+  return true;
+}
+
+async function saveToSheets(){
+  showSaving();
+  try{
+    await fetch(SCRIPT_URL,{
+      method:"POST",
+      body:JSON.stringify(products)
+    });
+    showSaved();
+  }catch(e){
+    document.getElementById("savebadge").textContent="Save failed";
+    setTimeout(()=>document.getElementById("savebadge").classList.remove("show"),2000);
+  }
+}
+
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(saveToSheets,1500);
+}
+
+async function init(){
+  try{
+    document.getElementById("ltxt").textContent="Loading your inventory...";
+    const loaded=await loadFromSheets();
+    if(!loaded){
+      document.getElementById("ltxt").textContent="First run: saving 256 items...";
+      products=RAW.slice();
+      await saveToSheets();
+    }
+  }catch(e){
+    document.getElementById("lerr").textContent="Could not connect - using local data";
+    products=RAW.slice();
+  }
+  document.getElementById("loadscreen").classList.add("gone");
+  renderAll();
+}
+
+function renderAll(){renderHome();renderItems();renderReports();updCatsDl();}
+
+function renderHome(){
+  const sold=products.filter(p=>p.status==="sold");
+  const uns=products.filter(p=>p.status==="unsold");
+  const dns=products.filter(p=>p.status==="did_not_sell");
+  const tp=sold.reduce((a,p)=>a+(p.profit||0),0);
+  const tr=sold.reduce((a,p)=>a+(p.soldPrice||0),0);
+  const ti=products.reduce((a,p)=>a+(p.cost||0),0);
+  const pend=uns.reduce((a,p)=>a+(p.cost||0),0);
+  const tot=products.filter(p=>p.name).length;
+  const sr=tot?Math.round((sold.length/tot)*100):0;
+  document.getElementById("hprofit").textContent=$n(tp);
+  document.getElementById("hsub").textContent=sold.length+" sold · "+$n(tr)+" revenue";
+  document.getElementById("kinv").textContent=$n(ti);
+  document.getElementById("kpend").textContent=$n(pend);
+  document.getElementById("ksr").textContent=sr+"%";
+  document.getElementById("ssold").textContent=sold.length;
+  document.getElementById("suns").textContent=uns.length;
+  document.getElementById("sdns").textContent=dns.length;
+  renderMChart(sold);renderCatList();
+}
+
+function renderMChart(sold){
+  const map={};
+  sold.forEach(p=>{if(!p.dateSold)return;const k=p.dateSold.slice(0,7);if(!map[k])map[k]={k,p:0};map[k].p+=p.profit||0;});
+  const data=Object.values(map).sort((a,b)=>a.k.localeCompare(b.k)).slice(-12);
+  const labels=data.map(d=>new Date(d.k+"-01").toLocaleDateString("en-US",{month:"short",year:"2-digit"}));
+  const vals=data.map(d=>Math.round(d.p));
+  const ctx=document.getElementById("mchart").getContext("2d");
+  if(mChart)mChart.destroy();
+  mChart=new Chart(ctx,{type:"line",data:{labels,datasets:[{data:vals,label:"Profit",borderColor:"#C8A96E",borderWidth:2,backgroundColor:"rgba(200,169,110,.15)",fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:"#C8A96E"}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>"$"+Math.round(c.raw).toLocaleString()}}},scales:{x:{grid:{color:"rgba(255,255,255,.05)"},ticks:{color:"rgba(237,233,227,.35)",font:{size:10}}},y:{grid:{color:"rgba(255,255,255,.05)"},ticks:{color:"rgba(237,233,227,.25)",font:{size:9},callback:v=>"$"+v}}}}});
+}
+
+function catMap(){
+  const m={};
+  products.filter(p=>p.name).forEach(p=>{const c=p.category||"Other";if(!m[c])m[c]={name:c,profit:0,sold:0,total:0};m[c].total++;if(p.status==="sold"){m[c].sold++;m[c].profit+=p.profit||0;}});
+  return Object.values(m).sort((a,b)=>b.profit-a.profit);
+}
+
+function renderCatList(){
+  const cats=catMap();
+  document.getElementById("catlist").innerHTML=cats.map((c,i)=>{
+    const col=catColor(c.name);
+    const sr=c.total?Math.round((c.sold/c.total)*100):0;
+    const pc=c.profit>0?"#7CB87A":"rgba(237,233,227,.3)";
+    const n=c.name.replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+    return (i>0?'<div class="div"></div>':'')+
+      '<button onclick="openCat(''+n+'')" style="width:100%;background:none;border:none;cursor:pointer;padding:13px 16px;display:flex;align-items:center;gap:12px;text-align:left;color:#EDE9E3">'+
+      '<div style="width:38px;height:38px;border-radius:11px;background:'+col+'18;border:1px solid '+col+'28;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+
+      '<div style="width:12px;height:12px;border-radius:3px;background:'+col+'"></div></div>'+
+      '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.name+'</div>'+
+      '<div style="font-size:11px;color:rgba(237,233,227,.35);margin-top:2px">'+c.total+' items · '+sr+'% sold</div></div>'+
+      '<div style="text-align:right;flex-shrink:0"><div style="font-weight:800;font-size:16px;color:'+pc+'">'+$n(c.profit)+'</div>'+
+      '<div style="font-size:10px;color:rgba(237,233,227,.3);margin-top:1px">profit</div></div>'+
+      '<div style="color:rgba(237,233,227,.2);font-size:18px">&#x203A;</div></button>';
+  }).join("");
+}
+
+function openCat(name){
+  curCat=name;
+  const items=products.filter(p=>p.category===name);
+  const sold=items.filter(p=>p.status==="sold");
+  const profit=sold.reduce((a,p)=>a+(p.profit||0),0);
+  const rev=sold.reduce((a,p)=>a+(p.soldPrice||0),0);
+  const sr=items.length?Math.round((sold.length/items.length)*100):0;
+  const col=catColor(name);
+  document.getElementById("cattitle").textContent=name;
+  document.getElementById("catcount").textContent=items.length+" items";
+  document.getElementById("caticon").style.cssText="width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:"+col+"18;border:1px solid "+col+"30";
+  document.getElementById("caticon").innerHTML='<div style="width:14px;height:14px;border-radius:4px;background:'+col+'"></div>';
+  document.getElementById("catstats").innerHTML=[[$n(profit),"Profit","#7CB87A"],[$n(rev),"Revenue",col],[sold.length,"Sold","#7CB87A"],[sr+"%","Sell Rate",col]].map(([v,l,c])=>'<div class="mstat"><div style="font-weight:800;font-size:18px;color:'+c+'">'+v+'</div><div style="font-size:11px;color:rgba(237,233,227,.35);margin-top:2px">'+l+'</div></div>').join("");
+  const sorted=[...items].sort((a,b)=>({sold:0,unsold:1,did_not_sell:2}[a.status]||0)-({sold:0,unsold:1,did_not_sell:2}[b.status]||0));
+  document.getElementById("catitems").innerHTML=sorted.map((p,i)=>itemHTML(p,i>0)).join("");
+  document.getElementById("catscreen").classList.add("on");
+}
+function closeCat(){document.getElementById("catscreen").classList.remove("on");curCat=null;}
+
+function renderItems(){
+  const sold=products.filter(p=>p.status==="sold");
+  const uns=products.filter(p=>p.status==="unsold");
+  const dns=products.filter(p=>p.status==="did_not_sell");
+  const tot=products.filter(p=>p.name).length;
+  document.getElementById("fpills").innerHTML=[["all","All",tot],["sold","Sold",sold.length],["unsold","In Stock",uns.length],["did_not_sell","No Sale",dns.length]].map(([v,l,n])=>'<button class="fp'+(curFilter===v?" on":"")+'" onclick="setFilt(''+v+'')">'+l+' <span style="opacity:.7">('+n+')</span></button>').join("");
+  const q=(document.getElementById("srch").value||"").toLowerCase();
+  let f=products.filter(p=>p.name);
+  if(curFilter!=="all")f=f.filter(p=>p.status===curFilter);
+  if(q)f=f.filter(p=>p.name.toLowerCase().includes(q)||(p.brand||"").toLowerCase().includes(q));
+  f.sort((a,b)=>(b.id||0)-(a.id||0));
+  const el=document.getElementById("ilist");
+  if(!f.length){el.innerHTML='<div style="text-align:center;color:rgba(237,233,227,.3);padding:40px 16px;font-size:14px">No items found</div>';return;}
+  el.innerHTML=f.map((p,i)=>itemHTML(p,i>0)).join("");
+}
+function setFilt(v){curFilter=v;renderItems();}
+
+function itemHTML(p,div){
+  const bar=p.status==="sold"?"#7CB87A":p.status==="did_not_sell"?"#D4826A":"#C8A96E";
+  const dts=dBetween(p.datePurchased,p.dateSold);
+  const bc=p.status==="sold"?"bs":p.status==="unsold"?"bu":"bd";
+  const bt=p.status==="sold"?"Sold":p.status==="unsold"?"In Stock":"No Sale";
+  const pc=(p.profit||0)>=0?"#7CB87A":"#D4826A";
+  return (div?'<div class="div"></div>':'')+
+    '<div class="irow">'+
+    '<div class="ibar" style="background:'+bar+'"></div>'+
+    '<div style="flex:1;min-width:0">'+
+    '<div style="font-weight:600;font-size:14px;color:#EDE9E3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px">'+p.name+'</div>'+
+    '<div style="font-size:11px;color:rgba(237,233,227,.35);margin-bottom:7px">'+(p.category||"")+( p.brand?" · "+p.brand:"")+'</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+
+    '<span style="font-size:12px;color:rgba(237,233,227,.5)">Paid <b style="color:#EDE9E3">'+$n(p.cost)+'</b></span>'+
+    (p.soldPrice?'<span style="color:rgba(237,233,227,.3);font-size:12px">→</span><b style="font-size:12px;color:#EDE9E3">'+$n(p.soldPrice)+'</b>':'')+
+    (p.profit!=null?'<span style="font-weight:700;font-size:13px;color:'+pc+'">'+(p.profit>=0?"+":"")+$n(p.profit)+'</span>':'')+
+    (dts!=null?'<span style="font-size:11px;color:rgba(237,233,227,.25)">'+dts+'d</span>':'')+
+    '</div></div>'+
+    '<div style="display:flex;flex-direction:column;gap:7px;align-items:flex-end;flex-shrink:0">'+
+    '<span class="badge '+bc+'">'+bt+'</span>'+
+    '<div style="display:flex;gap:5px">'+
+    '<button class="be" onclick="openEdit('+p.id+')">Edit</button>'+
+    '<button class="bx" onclick="delItem('+p.id+')">&#x2715;</button>'+
+    '</div></div></div>';
+}
+
+function renderReports(){
+  const cats=catMap();
+  const ctx=document.getElementById("cchart").getContext("2d");
+  if(cChart)cChart.destroy();
+  cChart=new Chart(ctx,{type:"bar",data:{labels:cats.map(c=>c.name),datasets:[{data:cats.map(c=>Math.round(c.profit)),label:"Profit",backgroundColor:cats.map(c=>catColor(c.name)),borderRadius:6}]},options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>"$"+Math.round(c.raw).toLocaleString()}}},scales:{x:{grid:{color:"rgba(255,255,255,.05)"},ticks:{color:"rgba(237,233,227,.25)",font:{size:9},callback:v=>"$"+v}},y:{grid:{display:false},ticks:{color:"rgba(237,233,227,.5)",font:{size:10}}}}}});
+  document.getElementById("cchart").style.height=Math.max(200,cats.length*28)+"px";
+  const uns=products.filter(p=>p.status==="unsold"&&p.datePurchased).map(p=>Object.assign({},p,{age:dSince(p.datePurchased)||0})).sort((a,b)=>b.age-a.age).slice(0,15);
+  document.getElementById("awlist").innerHTML=uns.map((p,i)=>{
+    const ac=p.age>60?"#D4826A":p.age>30?"#C8A96E":"#7CB87A";
+    const tag=p.age>60?"STALE":p.age>30?"SLOW":"FRESH";
+    return (i>0?'<div class="div"></div>':'')+
+      '<div style="padding:13px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px">'+
+      '<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px;color:#EDE9E3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name+'</div>'+
+      '<div style="font-size:11px;color:rgba(237,233,227,.35);margin-top:2px">'+(p.category||"")+' · Paid '+$n(p.cost)+'</div></div>'+
+      '<div style="text-align:right"><div style="font-weight:700;font-size:15px;color:'+ac+'">'+p.age+'d</div>'+
+      '<div style="font-size:10px;font-weight:700;color:'+ac+'">'+tag+'</div></div></div>';
+  }).join("");
+  const top=products.filter(p=>p.status==="sold"&&p.cost>0&&p.soldPrice).map(p=>Object.assign({},p,{roi:Math.round(((p.soldPrice-p.cost)/p.cost)*100)})).sort((a,b)=>b.roi-a.roi).slice(0,10);
+  document.getElementById("roilist").innerHTML=top.map((p,i)=>
+    (i>0?'<div class="div"></div>':'')+
+    '<div style="padding:12px 16px;display:flex;align-items:center;gap:12px">'+
+    '<div style="font-weight:800;font-size:14px;color:rgba(237,233,227,.2);width:22px;flex-shrink:0">#'+(i+1)+'</div>'+
+    '<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;color:#EDE9E3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name+'</div>'+
+    '<div style="font-size:11px;color:rgba(237,233,227,.35);margin-top:2px">'+$n(p.cost)+' → '+$n(p.soldPrice)+'</div></div>'+
+    '<div style="text-align:right;flex-shrink:0">'+
+    '<div style="font-weight:800;font-size:15px;color:#7CB87A">+'+$n(p.profit)+'</div>'+
+    '<div style="font-size:12px;color:#C8A96E;font-weight:700;margin-top:1px">'+p.roi+'%</div></div></div>'
+  ).join("");
+}
+
+function openAdd(){
+  editId=null;
+  document.getElementById("mtitle").textContent="New Item";
+  document.getElementById("subbtn").textContent="Add Item";
+  document.getElementById("fname").value="";document.getElementById("fcat").value="";
+  document.getElementById("fbrand").value="";document.getElementById("fcost").value="";
+  document.getElementById("fsold").value="";
+  document.getElementById("fdp").value=new Date().toISOString().slice(0,10);
+  document.getElementById("fds").value="";
+  setSt("unsold");uprev();
+  document.getElementById("modal").classList.add("on");
+  setTimeout(()=>document.getElementById("fname").focus(),100);
+}
+function openEdit(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  editId=id;
+  document.getElementById("mtitle").textContent="Edit Item";
+  document.getElementById("subbtn").textContent="Save Changes";
+  document.getElementById("fname").value=p.name||"";document.getElementById("fcat").value=p.category||"";
+  document.getElementById("fbrand").value=p.brand||"";document.getElementById("fcost").value=p.cost||"";
+  document.getElementById("fsold").value=p.soldPrice!=null?p.soldPrice:"";
+  document.getElementById("fdp").value=p.datePurchased||"";document.getElementById("fds").value=p.dateSold||"";
+  setSt(p.status||"unsold");uprev();
+  document.getElementById("modal").classList.add("on");
+}
+function closeModal(){document.getElementById("modal").classList.remove("on");}
+
+function setSt(s){
+  curStatus=s;
+  const opts={sold:"oSold",unsold:"oUns",did_not_sell:"oDns"};
+  const cols={sold:"#7CB87A",unsold:"#C8A96E",did_not_sell:"#D4826A"};
+  Object.keys(opts).forEach(k=>{
+    const el=document.getElementById(opts[k]);
+    if(k===s){el.style.background=cols[k]+"18";el.style.borderColor=cols[k];el.style.color=cols[k];}
+    else{el.style.background="rgba(255,255,255,.04)";el.style.borderColor="rgba(255,255,255,.08)";el.style.color="rgba(237,233,227,.35)";}
+  });
+}
+
+function uprev(){
+  const c=parseFloat(document.getElementById("fcost").value);
+  const s=parseFloat(document.getElementById("fsold").value);
+  const el=document.getElementById("prev");
+  if(!isNaN(c)&&!isNaN(s)){
+    const pr=s-c,roi=c>0?((pr/c)*100).toFixed(0):0;
+    el.style.display="flex";el.style.background=pr>=0?"rgba(124,184,122,.1)":"rgba(212,130,106,.1)";
+    el.style.border="1px solid "+(pr>=0?"rgba(124,184,122,.2)":"rgba(212,130,106,.2)");
+    document.getElementById("pproft").textContent=(pr>=0?"↑ +":"↓ ")+"$"+Math.round(Math.abs(pr));
+    document.getElementById("pproft").style.color=pr>=0?"#7CB87A":"#D4826A";
+    document.getElementById("proi").textContent=roi+"% ROI";
+  }else{el.style.display="none";}
+}
+
+async function saveItem(){
+  const name=document.getElementById("fname").value.trim();if(!name)return;
+  const cost=parseFloat(document.getElementById("fcost").value)||0;
+  const spv=document.getElementById("fsold").value;
+  const sp=spv!==""?parseFloat(spv):null;
+  const p={id:editId||Date.now(),name,category:document.getElementById("fcat").value.trim(),brand:document.getElementById("fbrand").value.trim(),cost,soldPrice:sp,profit:sp!=null?sp-cost:null,datePurchased:document.getElementById("fdp").value||null,dateSold:document.getElementById("fds").value||null,status:curStatus};
+  if(editId)products=products.map(x=>x.id===editId?p:x);
+  else products=[p,...products];
+  closeModal();renderAll();
+  if(curCat)openCat(curCat);
+  scheduleSave();
+}
+
+async function delItem(id){
+  if(!confirm("Remove this item?"))return;
+  products=products.filter(p=>p.id!==id);
+  renderAll();if(curCat)openCat(curCat);
+  scheduleSave();
+}
+
+function updCatsDl(){
+  const cats=[...new Set(products.map(p=>p.category).filter(Boolean))].sort();
+  document.getElementById("catsdl").innerHTML=cats.map(c=>"<option value='"+c.replace(/'/g,"&#39;")+"'>").join("");
+}
+
+function swTab(tab,btn){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("on"));
+  document.querySelectorAll(".tb").forEach(b=>b.classList.remove("on"));
+  document.getElementById("p"+tab).classList.add("on");
+  btn.classList.add("on");
+}
+
+init();
+</script>
+</body>
+</html>
